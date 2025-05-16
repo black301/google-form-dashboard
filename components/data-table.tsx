@@ -1,180 +1,78 @@
 "use client"
 
-import type React from "react"
-
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Card, CardContent } from "@/components/ui/card"
-import {
-  Pagination,
-  PaginationContent,
-  PaginationItem,
-  PaginationLink,
-  PaginationNext,
-  PaginationPrevious,
-} from "@/components/ui/pagination"
-import { Badge } from "@/components/ui/badge"
-import { ArrowDown, ArrowUp, ExternalLink } from "lucide-react"
-import { useState } from "react"
+import { ArrowDown, ArrowUp } from "lucide-react"
 
-interface FormResponse {
-  [key: string]: string
+interface LinkObject {
+  url: string
+  text: string
+}
+
+interface SortConfig {
+  key: string | null
+  direction: "ascending" | "descending"
 }
 
 interface DataTableProps {
-  data: FormResponse[]
-  sortConfig: {
-    key: string | null
-    direction: "ascending" | "descending"
-  }
+  data: Record<string, string | LinkObject>[]
+  sortConfig: SortConfig
   onSort: (key: string) => void
 }
 
 export function DataTable({ data, sortConfig, onSort }: DataTableProps) {
-  const [currentPage, setCurrentPage] = useState(1)
-  const itemsPerPage = 10
-
-  if (!data || data.length === 0) {
-    return (
-      <Card>
-        <CardContent className="p-6">
-          <p className="text-center text-muted-foreground">No data available</p>
-        </CardContent>
-      </Card>
-    )
+  if (!data.length) {
+    return <div className="text-center py-8">No data found</div>
   }
 
-  const headers = Object.keys(data[0])
-
-  // Calculate pagination
-  const totalPages = Math.ceil(data.length / itemsPerPage)
-  const startIndex = (currentPage - 1) * itemsPerPage
-  const paginatedData = data.slice(startIndex, startIndex + itemsPerPage)
-
-  // Format cell content based on type
-  const formatCellContent = (header: string, content: string | undefined): React.ReactNode => {
-    if (!content) return "-"
-
-    // Format based on header type
-    if (header.toLowerCase() === "timestamp") {
-      try {
-        const date = new Date(content)
-        return date.toLocaleString()
-      } catch {
-        return content
-      }
-    }
-
-    if (header.toLowerCase() === "email address" || header.toLowerCase().includes("email")) {
-      return (
-        <a href={`mailto:${content}`} className="text-primary hover:underline flex items-center">
-          {content}
-        </a>
-      )
-    }
-
-    if (header.toLowerCase() === "linkedin" || header.toLowerCase().includes("linkedin")) {
-      if (content.startsWith("http")) {
-        return (
-          <a
-            href={content}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-primary hover:underline flex items-center"
-          >
-            {content.substring(0, 30)}... <ExternalLink className="ml-1 h-3 w-3" />
-          </a>
-        )
-      }
-      return content
-    }
-
-    if (header.toLowerCase() === "specialization") {
-      return <Badge variant="outline">{content}</Badge>
-    }
-
-    // Truncate long text
-    if (typeof content === "string" && content.length > 50) {
-      return `${content.substring(0, 50)}...`
-    }
-
-    return content
-  }
+  // Get all unique keys from the data
+  const columns = Object.keys(data[0] || {})
 
   return (
-    <div className="space-y-4">
-      <Card>
-        <div className="rounded-md border">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                {headers.map((header) => (
-                  <TableHead key={header} className="cursor-pointer hover:bg-muted/50" onClick={() => onSort(header)}>
-                    <div className="flex items-center space-x-1">
-                      <span>{header}</span>
-                      {sortConfig.key === header &&
-                        (sortConfig.direction === "ascending" ? (
-                          <ArrowUp className="h-4 w-4" />
-                        ) : (
-                          <ArrowDown className="h-4 w-4" />
-                        ))}
-                    </div>
-                  </TableHead>
-                ))}
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {paginatedData.map((row, rowIndex) => (
-                <TableRow key={rowIndex}>
-                  {headers.map((header) => (
-                    <TableCell key={`${rowIndex}-${header}`}>{formatCellContent(header, row[header])}</TableCell>
-                  ))}
-                </TableRow>
+    <div className="rounded-md border overflow-hidden">
+      <Table>
+        <TableHeader>
+          <TableRow>
+            {columns.map((column) => (
+              <TableHead key={column} className="cursor-pointer" onClick={() => onSort(column)}>
+                <div className="flex items-center space-x-1">
+                  <span>{column}</span>
+                  {sortConfig.key === column && (
+                    <span className="ml-1">
+                      {sortConfig.direction === "ascending" ? (
+                        <ArrowUp className="h-4 w-4" />
+                      ) : (
+                        <ArrowDown className="h-4 w-4" />
+                      )}
+                    </span>
+                  )}
+                </div>
+              </TableHead>
+            ))}
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {data.map((row, rowIndex) => (
+            <TableRow key={rowIndex}>
+              {columns.map((column) => (
+                <TableCell key={`${rowIndex}-${column}`}>
+                  {typeof row[column] === "object" && row[column] !== null && "url" in row[column] ? (
+                    <a
+                      href={(row[column] as LinkObject).url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-blue-600 hover:underline"
+                    >
+                      {(row[column] as LinkObject).text}
+                    </a>
+                  ) : (
+                    row[column]
+                  )}
+                </TableCell>
               ))}
-            </TableBody>
-          </Table>
-        </div>
-      </Card>
-
-      {totalPages > 1 && (
-        <Pagination>
-          <PaginationContent>
-            <PaginationItem>
-              <PaginationPrevious
-                onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
-                className={currentPage === 1 ? "pointer-events-none opacity-50" : "cursor-pointer"}
-              />
-            </PaginationItem>
-
-            {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-              // Show pages around current page
-              let pageNum = i + 1
-              if (totalPages > 5) {
-                if (currentPage > 3) {
-                  pageNum = currentPage - 3 + i
-                }
-                if (currentPage > totalPages - 2) {
-                  pageNum = totalPages - 4 + i
-                }
-              }
-
-              return (
-                <PaginationItem key={pageNum}>
-                  <PaginationLink onClick={() => setCurrentPage(pageNum)} isActive={currentPage === pageNum}>
-                    {pageNum}
-                  </PaginationLink>
-                </PaginationItem>
-              )
-            })}
-
-            <PaginationItem>
-              <PaginationNext
-                onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
-                className={currentPage === totalPages ? "pointer-events-none opacity-50" : "cursor-pointer"}
-              />
-            </PaginationItem>
-          </PaginationContent>
-        </Pagination>
-      )}
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
     </div>
   )
 }

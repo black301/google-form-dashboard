@@ -1,8 +1,6 @@
 "use client"
 
 import { Input } from "@/components/ui/input"
-import { Search } from "lucide-react"
-import { Skeleton } from "@/components/ui/skeleton"
 
 interface FiltersProps {
   searchTerm: string
@@ -13,25 +11,17 @@ interface FiltersProps {
 
 export function Filters({ searchTerm, setSearchTerm, totalEntries, loading }: FiltersProps) {
   return (
-    <div className="flex flex-col space-y-4 md:flex-row md:items-center md:justify-between md:space-y-0">
-      <div className="relative w-full md:w-72">
-        <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+    <div className="flex flex-col space-y-4 md:space-y-0 md:flex-row md:items-center md:justify-between">
+      <div className="relative">
         <Input
           type="search"
-          placeholder="Search responses..."
-          className="pl-8"
+          placeholder="Search..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
+          disabled={loading}
         />
       </div>
-
-      <div className="text-sm text-muted-foreground">
-        {loading ? (
-          <Skeleton className="h-5 w-32" />
-        ) : (
-          `Showing ${totalEntries} ${totalEntries === 1 ? "entry" : "entries"}`
-        )}
-      </div>
+      <div>Total Entries: {totalEntries}</div>
     </div>
   )
 }
