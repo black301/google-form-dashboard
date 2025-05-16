@@ -21,7 +21,7 @@ export async function fetchAndParseCSV(url: string): Promise<any[]> {
           })
           resolve(filteredData)
         },
-        error: (error) => {
+        error: (error: Error) => {
           reject(error)
         },
       })
