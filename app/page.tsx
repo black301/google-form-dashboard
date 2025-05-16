@@ -8,9 +8,13 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { AlertCircle } from "lucide-react"
 
+interface FormResponse {
+  [key: string]: string
+}
+
 export default function Home() {
-  const [data, setData] = useState<any[]>([])
-  const [filteredData, setFilteredData] = useState<any[]>([])
+  const [data, setData] = useState<FormResponse[]>([])
+  const [filteredData, setFilteredData] = useState<FormResponse[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [searchTerm, setSearchTerm] = useState("")
@@ -23,7 +27,8 @@ export default function Home() {
     const loadData = async () => {
       try {
         setLoading(true)
-        const csvUrl = "/api/csv";
+        const csvUrl =
+          "https://docs.google.com/sheets/d/e/2PACX-1vR2KXpX8_6FUj3Ks77B6WNJrw2QJlQnt0WWPSk2U6V1z8a1G5rwEnKNBqrnmT_9HZCoy5uREiZrs9uA/pub?gid=1596920951&single=true&output=csv"
         const parsedData = await fetchAndParseCSV(csvUrl)
         setData(parsedData)
         setFilteredData(parsedData)

@@ -1,6 +1,10 @@
 import Papa from "papaparse"
 
-export async function fetchAndParseCSV(url: string): Promise<any[]> {
+interface FormResponse {
+  [key: string]: string
+}
+
+export async function fetchAndParseCSV(url: string): Promise<FormResponse[]> {
   try {
     const response = await fetch(url)
 
@@ -10,13 +14,13 @@ export async function fetchAndParseCSV(url: string): Promise<any[]> {
 
     const csvText = await response.text()
 
-    return new Promise((resolve, reject) => {
+    return new Promise<FormResponse[]>((resolve, reject) => {
       Papa.parse(csvText, {
         header: true,
         skipEmptyLines: true,
         complete: (results) => {
           // Filter out rows that are completely empty
-          const filteredData = results.data.filter((row: any) => {
+          const filteredData = (results.data as FormResponse[]).filter((row: FormResponse) => {
             return Object.values(row).some((value) => value !== "")
           })
           resolve(filteredData)

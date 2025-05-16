@@ -14,8 +14,12 @@ import { Badge } from "@/components/ui/badge"
 import { ArrowDown, ArrowUp, ExternalLink } from "lucide-react"
 import { useState } from "react"
 
+interface FormResponse {
+  [key: string]: string
+}
+
 interface DataTableProps {
-  data: any[]
+  data: FormResponse[]
   sortConfig: {
     key: string | null
     direction: "ascending" | "descending"
@@ -53,7 +57,7 @@ export function DataTable({ data, sortConfig, onSort }: DataTableProps) {
       try {
         const date = new Date(content)
         return date.toLocaleString()
-      } catch (e) {
+      } catch (_) {
         return content
       }
     }
