@@ -1,5 +1,7 @@
 "use client"
 
+import type React from "react"
+
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Card, CardContent } from "@/components/ui/card"
 import {
@@ -49,7 +51,7 @@ export function DataTable({ data, sortConfig, onSort }: DataTableProps) {
   const paginatedData = data.slice(startIndex, startIndex + itemsPerPage)
 
   // Format cell content based on type
-  const formatCellContent = (header: string, content: any) => {
+  const formatCellContent = (header: string, content: string | undefined): React.ReactNode => {
     if (!content) return "-"
 
     // Format based on header type
@@ -57,7 +59,7 @@ export function DataTable({ data, sortConfig, onSort }: DataTableProps) {
       try {
         const date = new Date(content)
         return date.toLocaleString()
-      } catch (_) {
+      } catch {
         return content
       }
     }
